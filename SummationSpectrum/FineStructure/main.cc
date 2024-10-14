@@ -319,7 +319,8 @@ int main(int argc, char* argv[])
             output << Neu_Spec_Name_Type_2[i] << std::endl;
         }
 
-        double Neu_Spec_809_Sum, Neu_Spec_810_Sum = 0.0, 0.0;
+        double Neu_Spec_809_Sum = 0.0;
+        double Neu_Spec_810_Sum = 0.0;
 
         for(int i=0; i<Neu_Spec_809_Set.size(); i++)
         {
