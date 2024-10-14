@@ -168,6 +168,8 @@ int main(int argc, char* argv[])
         std::vector<double> Neu_Spec_Ratio_Type_1;
         std::vector<std::string> Neu_Spec_Name_Type_1;
         std::vector<std::string> Neu_Spec_Name_Type_2;
+        std::vector<double> Neu_Spec_809_Set;
+        std::vector<double> Neu_Spec_810_Set;
 
         for(int i=0;i<FYList.size();i++)
         {
@@ -280,11 +282,15 @@ int main(int argc, char* argv[])
             {
                 Neu_Spec_Ratio_Type_1.push_back(Neu_Spec_810/Neu_Spec_809);
                 Neu_Spec_Name_Type_1.push_back(sisoname);
+                Neu_Spec_809_Set.push_back(Neu_Spec_809);
+                Neu_Spec_810_Set.push_back(Neu_Spec_810);
             }
 
             if(Neu_Spec_809 != 0.0 && Neu_Spec_810 == 0.0)
             {
                 Neu_Spec_Name_Type_2.push_back(sisoname);
+                Neu_Spec_809_Set.push_back(Neu_Spec_809);
+                Neu_Spec_810_Set.push_back(Neu_Spec_810);
             }
         }
 
@@ -312,6 +318,22 @@ int main(int argc, char* argv[])
         {
             output << Neu_Spec_Name_Type_2[i] << std::endl;
         }
+
+        double Neu_Spec_809_Sum, Neu_Spec_810_Sum = 0.0, 0.0;
+
+        for(int i=0; i<Neu_Spec_809_Set.size(); i++)
+        {
+            Neu_Spec_809_Sum += Neu_Spec_809_Set[i];
+        }
+
+        for(int i=0; i<Neu_Spec_810_Set.size(); i++)
+        {
+            Neu_Spec_810_Sum += Neu_Spec_810_Set[i];
+        }
+
+        output << "---------------------" << std::endl;
+
+        output << Neu_Spec_809_Sum << ' ' << Neu_Spec_809_Sum << ' ' << Neu_Spec_810_Sum/Neu_Spec_809_Sum << std::endl;
 
         //Ratio
         for(int i=0; i<int(stod(nBin)); i++)
