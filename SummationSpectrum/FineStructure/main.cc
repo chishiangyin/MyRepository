@@ -118,6 +118,14 @@ int main(int argc, char* argv[])
         nBin="10e2";
     }
     
+    //Select FineStructure Isotope
+    struct FineStructure
+    {
+        std::string Iso_Name;
+        double Neu_Spec_809 = 0.0;
+        double Neu_Spec_810 = 0.0;
+        double Ratio = Neu_Spec_810/Neu_Spec_809;
+    };
     
     if(InputType == '0' && DecayInput.size()!=0 && FissionInput.size()!=0) 
     {
@@ -165,11 +173,7 @@ int main(int argc, char* argv[])
 
         //Select FineStructure Isotope
         std::ofstream output("Selected_FineStructure.txt");
-        std::vector<double> Neu_Spec_Ratio_Type_1;
-        std::vector<std::string> Neu_Spec_Name_Type_1;
-        std::vector<std::string> Neu_Spec_Name_Type_2;
-        std::vector<double> Neu_Spec_809_Set;
-        std::vector<double> Neu_Spec_810_Set;
+        std::vector<FineStructure> FineStructure_8MeV;
 
         for(int i=0;i<FYList.size();i++)
         {
@@ -278,63 +282,49 @@ int main(int argc, char* argv[])
                 
             }
 
-            if(Neu_Spec_809 != 0.0 && Neu_Spec_810 != 0.0)
+            if(Neu_Spec_809 != 0.0)
             {
-                Neu_Spec_Ratio_Type_1.push_back(Neu_Spec_810/Neu_Spec_809);
-                Neu_Spec_Name_Type_1.push_back(sisoname);
-                Neu_Spec_809_Set.push_back(Neu_Spec_809);
-                Neu_Spec_810_Set.push_back(Neu_Spec_810);
-            }
-
-            if(Neu_Spec_809 != 0.0 && Neu_Spec_810 == 0.0)
-            {
-                Neu_Spec_Name_Type_2.push_back(sisoname);
-                Neu_Spec_809_Set.push_back(Neu_Spec_809);
-                Neu_Spec_810_Set.push_back(Neu_Spec_810);
+                FineStructure_8MeV.push_back({sisoname,Neu_Spec_809,Neu_Spec_810});
             }
         }
 
         //Selected FineStructure Isotope
-        for(int i=0; i<Neu_Spec_Ratio_Type_1.size(); i++)
+        for(int i=0; i<FineStructure_8MeV.size(); i++)
         {
-            for(int j=0; j<Neu_Spec_Ratio_Type_1.size()-i-1; j++)
+            for(int j=0; j<FineStructure_8MeV.size()-i-1; j++)
             {
-                if(Neu_Spec_Ratio_Type_1[j]>Neu_Spec_Ratio_Type_1[j+1])
+                if(FineStructure_8MeV[j].Ratio > FineStructure_8MeV[j+1].Ratio)
                 {
-                    std::swap(Neu_Spec_Ratio_Type_1[j],Neu_Spec_Ratio_Type_1[j+1]);
-                    std::swap(Neu_Spec_Name_Type_1[j],Neu_Spec_Name_Type_1[j+1]);
+                    std::swap(FineStructure_8MeV[j],FineStructure_8MeV[j+1]);
                 }
             }
         }
 
-        for(int i=0; i<Neu_Spec_Ratio_Type_1.size(); i++)
-        {
-            output << Neu_Spec_Name_Type_1[i] << ' ' << Neu_Spec_Ratio_Type_1[i] << std::endl;
-        }
+        output << "----IsoName----809----810----Ratio----" << std::endl;
 
-        output << "---------------------" << std::endl;
-
-        for(int i=0; i<Neu_Spec_Name_Type_2.size(); i++)
+        for(int i=0; i<FineStructure_8MeV.size(); i++)
         {
-            output << Neu_Spec_Name_Type_2[i] << std::endl;
+            output << FineStructure_8MeV[i].Iso_Name << ' ' << FineStructure_8MeV[i].Neu_Spec_809 << ' ' << FineStructure_8MeV[i].Neu_Spec_810 << ' ' << FineStructure_8MeV[i].Ratio << std::endl;
         }
 
         double Neu_Spec_809_Sum = 0.0;
         double Neu_Spec_810_Sum = 0.0;
 
-        for(int i=0; i<Neu_Spec_809_Set.size(); i++)
+        for(int i=0; i<FineStructure_8MeV.size(); i++)
         {
-            Neu_Spec_809_Sum += Neu_Spec_809_Set[i];
+            Neu_Spec_809_Sum += FineStructure_8MeV[i].Neu_Spec_809;
         }
 
-        for(int i=0; i<Neu_Spec_810_Set.size(); i++)
+        for(int i=0; i<FineStructure_8MeV.size(); i++)
         {
-            Neu_Spec_810_Sum += Neu_Spec_810_Set[i];
+            Neu_Spec_810_Sum += FineStructure_8MeV[i].Neu_Spec_810;
         }
 
-        output << "---------------------" << std::endl;
+        output << "----------Total Ratio-----------" << std::endl;
 
-        output << Neu_Spec_809_Sum << ' ' << Neu_Spec_809_Sum << ' ' << Neu_Spec_810_Sum/Neu_Spec_809_Sum << std::endl;
+        output << "----809----810----Ratio----" << std::endl;
+
+        output << Neu_Spec_809_Sum << ' ' << Neu_Spec_810_Sum << ' ' << Neu_Spec_810_Sum/Neu_Spec_809_Sum << std::endl;
 
         //Ratio
         for(int i=0; i<int(stod(nBin)); i++)
