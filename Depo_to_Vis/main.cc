@@ -74,10 +74,10 @@ int main()
         Group[i].E_vis = round(Group[i].E_vis * 100.0) / 100.0;
     }
     
-    TH1F* h_NeuSpec_E_vis = new TH1F("h_NeuSpec_E_vis", "", int(11e2), 0, 11);
+    TH1F* h_NeuSpec_E_vis = new TH1F("h_NeuSpec_E_vis", "", int(11e2 - 92.0), 0.92, 11);
     h_NeuSpec_E_vis -> GetXaxis() -> SetTitle("E_vis[MeV]");
 
-    for (int i = 1; i <= int(11e2); i++)
+    for (int i = 1; i <= int(11e2 - 92.0); i++)
     {
         h_NeuSpec_E_vis -> SetBinContent(i,0);
     }
@@ -85,7 +85,7 @@ int main()
     //绘制可见能谱
     for (int i = 0; i < Group.size(); i++)
     {
-        for (int j = 1; j <= int(11e2); j++)
+        for (int j = 1; j <= int(11e2 - 92.0); j++)
         {
             if (std::abs(Group[i].E_vis - h_NeuSpec_E_vis -> GetBinLowEdge(j)) < (1e-6))
             {
@@ -94,7 +94,7 @@ int main()
         }
     }
 
-    for (int i = 1; i <= int(11e2); i++)
+    for (int i = 1; i <= int(11e2 - 92.0); i++)
     {
         if (h_NeuSpec_E_vis -> GetBinContent(i) == 0.0 && h_NeuSpec_E_vis -> GetBinContent(i-1) != 0 && h_NeuSpec_E_vis -> GetBinContent(i+1) != 0)
         {
