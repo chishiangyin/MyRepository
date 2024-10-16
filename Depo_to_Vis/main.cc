@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH1F.h"
@@ -35,8 +36,9 @@ int main()
         if (Depo_Spec -> GetBinLowEdge(i) + (1e-7) >= 1.02)
         {
             Group.push_back({0,0,0,0});
-            
+
             Group.back().E_depo = Depo_Spec -> GetBinCenter(i);
+            Group.back().Neu = Depo_Spec -> GetBinContent(i);
 
             for (int j = 1; j <= Ratio_Graph -> GetNbinsX(); j++)
             {
@@ -51,20 +53,55 @@ int main()
     
     for (int i = 0; i < Group.size(); i++)
     {
-        Group.back().E_vis = Group[i].Ratio * Group[i].E_depo;
+        Group[i].E_vis = Group[i].Ratio * Group[i].E_depo;
     }
 
-    double nBin_vis = Group.size(); //可见能谱的bin数
+    //按E_vis排序
+    for (int i = 0; i < Group.size(); i++)
+    {
+        for(int j = 0; j < Group.size() - i - 1; j++)
+        {
+            if(Group[j].E_vis > Group[j+1].E_vis)
+            {
+                std::swap(Group[j], Group[j+1]);
+            }
+        }
+    }
+
+    //对E_vis四舍五入到百分位
+    for (int i = 0; i < Group.size(); i++)
+    {
+        Group[i].E_vis = round(Group[i].E_vis * 100.0) / 100.0;
+    }
     
-    TH1F* h_NeuSpec_E_vis = new TH1F("h_NeuSpec_E_vis", "", int(nBin_vis), 1.02, 10);
+    TH1F* h_NeuSpec_E_vis = new TH1F("h_NeuSpec_E_vis", "", int(11e2), 0, 11);
     h_NeuSpec_E_vis -> GetXaxis() -> SetTitle("E_vis[MeV]");
 
-    for (int i = 1; i <= int(nBin_vis); i++)
+    for (int i = 1; i <= int(11e2); i++)
     {
         h_NeuSpec_E_vis -> SetBinContent(i,0);
     }
 
+    //绘制可见能谱
+    for (int i = 0; i < Group.size(); i++)
+    {
+        for (int j = 1; j <= int(11e2); j++)
+        {
+            if (std::abs(Group[i].E_vis - h_NeuSpec_E_vis -> GetBinLowEdge(j)) < (1e-6))
+            {
+                h_NeuSpec_E_vis -> SetBinContent(j,h_NeuSpec_E_vis -> GetBinContent(j) + Group[i].Neu);
+            }
+        }
+    }
 
+    for (int i = 1; i <= int(11e2); i++)
+    {
+        if (h_NeuSpec_E_vis -> GetBinContent(i) == 0.0 && h_NeuSpec_E_vis -> GetBinContent(i-1) != 0 && h_NeuSpec_E_vis -> GetBinContent(i+1) != 0)
+        {
+            //若bin没有被填充，则取前后两bin的平均值填充
+            h_NeuSpec_E_vis -> SetBinContent(i, 0.5 * (h_NeuSpec_E_vis -> GetBinContent(i-1) + h_NeuSpec_E_vis -> GetBinContent(i+1)));
+        }
+    }
 
     TFile* outfile = new TFile("./NeuSpec_E_vis.root", "RECREATE");
     outfile -> cd();
