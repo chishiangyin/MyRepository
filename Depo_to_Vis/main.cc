@@ -9,6 +9,14 @@
 #include "TH1D.h"
 #include "TH1F.h"
 
+struct Data_Set
+{
+    double E_depo; // 沉积能量
+    double Ratio;  // 可见能量/沉积能量
+    double E_vis;  // 可见能量
+    double Neu;    // 与沉积能量对应的中微子数
+};
+
 int main()
 {
     TFile* Depo_File = TFile::Open("/junofs/users/yinqixiang/work/FineStructure/EnergyResolution/FY.root");
@@ -20,43 +28,43 @@ int main()
     double nBin = 10e2;         //沉积能谱的bin数
     double Energy_Bin = 1e-2;
 
-    std::vector<double> E_depo; // 沉积能量
-    std::vector<double> Ratio;  // 可见能量/沉积能量
-    std::vector<double> E_vis;  // 可见能量
+    std::vector<Data_Set> Group;
 
     for (int i = 1; i <= int(nBin); i++)
-    {
+    {  
         if (Depo_Spec -> GetBinLowEdge(i) + (1e-7) >= 1.02)
         {
-            E_depo.push_back(Depo_Spec -> GetBinCenter(i));
+            Group.push_back({0,0,0,0});
+            
+            Group.back().E_depo = Depo_Spec -> GetBinCenter(i);
 
             for (int j = 1; j <= Ratio_Graph -> GetNbinsX(); j++)
             {
                 // 沉积能谱每个bin的中心能量 == Vis/Depo每个bin的左边界能量
                 if (std::abs(Depo_Spec -> GetBinCenter(i) - Ratio_Graph -> GetBinLowEdge(j)) < (1e-6))
                 {
-                    Ratio.push_back(Ratio_Graph -> GetBinContent(j));
-
-                    std::cout<<Depo_Spec -> GetBinCenter(i)<<' '<<Ratio_Graph -> GetBinLowEdge(j)<<std::endl;
+                     Group.back().Ratio = Ratio_Graph -> GetBinContent(j);
                 }
             }
         }
     }
     
-    for (int i = 0; i < E_depo.size(); i++)
+    for (int i = 0; i < Group.size(); i++)
     {
-        E_vis.push_back(Ratio[i] * E_depo[i]);
+        Group.back().E_vis = Group[i].Ratio * Group[i].E_depo;
     }
 
-    double nBin_vis = E_depo.size(); //可见能谱的bin数
+    double nBin_vis = Group.size(); //可见能谱的bin数
     
-    TH1F* h_NeuSpec_E_vis = new TH1F("h_NeuSpec_E_vis", "", int(nBin_vis), 1.02, nBin_vis * Energy_Bin);
+    TH1F* h_NeuSpec_E_vis = new TH1F("h_NeuSpec_E_vis", "", int(nBin_vis), 1.02, 10);
     h_NeuSpec_E_vis -> GetXaxis() -> SetTitle("E_vis[MeV]");
 
     for (int i = 1; i <= int(nBin_vis); i++)
     {
-        h_NeuSpec_E_vis -> SetBinContent(i,1);
+        h_NeuSpec_E_vis -> SetBinContent(i,0);
     }
+
+
 
     TFile* outfile = new TFile("./NeuSpec_E_vis.root", "RECREATE");
     outfile -> cd();
