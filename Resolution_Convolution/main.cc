@@ -69,6 +69,11 @@ int main()
     //将原始可见能谱转换为和重建能谱范围一致的能谱
     TH1F* Visible_Spec = new TH1F("h_Neu_Spec_E_vis_Range", "", int(nBin_Rec), Start, Start + double(nBin_Rec) * Energy_Bin);
     Visible_Spec -> GetXaxis() -> SetTitle("E_vis[MeV]");
+
+    for (int i = 1; i <= int(nBin_Rec); i++)
+    {
+        Visible_Spec -> SetBinContent(i, 0);
+    }
     
     int Flag_2 = 1;
 
@@ -76,7 +81,7 @@ int main()
     {
         if (Visible_Spec_TEMP -> GetBinLowEdge(i) >= Start)
         {
-            Visible_Spec -> SetBinContent(Flag_2, Visible_Spec_TEMP -> GetBinContent(i));
+            Visible_Spec -> SetBinContent(Flag_2, Visible_Spec -> GetBinContent(i) + Visible_Spec_TEMP -> GetBinContent(i));
             Flag_2++;
         }
     }
@@ -109,14 +114,19 @@ int main()
     //将原始沉积能谱转换为和重建能谱范围一致的能谱
     TH1F* Depo_Spec = new TH1F("h_Neu_Spec_E_depo_Range", "", int(nBin_Rec), Start, Start + double(nBin_Rec) * Energy_Bin);
     Depo_Spec -> GetXaxis() -> SetTitle("E_depo[MeV]");
+
+    for (int i = 1; i <= int(nBin_Rec); i++)
+    {
+        Depo_Spec -> SetBinContent(i, 0);
+    }
     
     int Flag_3 = 1;
 
-    for (int i = 1; i <= int(nBin); i++)
+    for (int i = 1; i <= Depo_Spec_TEMP -> GetNbinsX(); i++)
     {
         if (Depo_Spec_TEMP -> GetBinLowEdge(i) >= Start)
         {
-            Depo_Spec -> SetBinContent(Flag_3, Depo_Spec_TEMP -> GetBinContent(i));
+            Depo_Spec -> SetBinContent(Flag_3, Depo_Spec -> GetBinContent(Flag_3) + Depo_Spec_TEMP -> GetBinContent(i));
             Flag_3++;
         }
     }
@@ -133,9 +143,9 @@ int main()
     Visible_Spec -> SetLineColor(kRed);
     Reconstruct_Spec -> SetLineColor(kBlue);
     Depo_Spec -> SetLineColor(kGreen + 3);
-    Visible_Spec -> SetLineWidth(2.5);
-    Reconstruct_Spec -> SetLineWidth(2.5);
-    Depo_Spec -> SetLineWidth(2.5);
+    Visible_Spec -> SetLineWidth(4);
+    Reconstruct_Spec -> SetLineWidth(4);
+    Depo_Spec -> SetLineWidth(4);
     
     Reconstruct_Spec -> Draw();
     Visible_Spec -> Draw("SAME");
@@ -145,10 +155,11 @@ int main()
     Visible_Spec -> Write();
     Depo_Spec -> Write();
 
-    auto Legend = new TLegend(0.6, 0.6, 0.9, 0.9);
+    auto Legend = new TLegend(0.6, 0.7, 0.9, 0.9);
     Legend->AddEntry(Depo_Spec, "Deposited Spectrum", "l");
-    Legend->AddEntry(Visible_Spec, "Visible Spectrum (with LS Nonlinear)", "l");
-    Legend->AddEntry(Reconstruct_Spec, "With TAO's Energy Resolution + LS Nonlinear", "l");
+    Legend->AddEntry(Visible_Spec, "Visible Spectrum", "l");
+    Legend->AddEntry(Reconstruct_Spec, "With TAO's Energy Resolution", "l");
+    Legend->SetTextSize(0.025);
     Legend->Draw();
 
     Canvas->Print("Neutrino_Spectra.png", "png100");
