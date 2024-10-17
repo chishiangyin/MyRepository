@@ -140,20 +140,21 @@ int main()
 
     gStyle->SetOptStat(0);  
 
-    Visible_Spec -> SetLineColor(kRed);
-    Reconstruct_Spec -> SetLineColor(kBlue);
     Depo_Spec -> SetLineColor(kGreen + 3);
+    Visible_Spec -> SetLineColor(kBlue);
+    Reconstruct_Spec -> SetLineColor(kRed);
+    
+    Depo_Spec -> SetLineWidth(4);
     Visible_Spec -> SetLineWidth(4);
     Reconstruct_Spec -> SetLineWidth(4);
-    Depo_Spec -> SetLineWidth(4);
     
-    Reconstruct_Spec -> Draw();
+    Depo_Spec -> Draw();
     Visible_Spec -> Draw("SAME");
-    Depo_Spec -> Draw("SAME");
+    Reconstruct_Spec -> Draw("SAME");
 
-    Reconstruct_Spec -> Write();
-    Visible_Spec -> Write();
     Depo_Spec -> Write();
+    Visible_Spec -> Write();
+    Reconstruct_Spec -> Write();
 
     auto Legend = new TLegend(0.6, 0.7, 0.9, 0.9);
     Legend->AddEntry(Depo_Spec, "Deposited Spectrum", "l");
