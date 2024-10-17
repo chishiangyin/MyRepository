@@ -59,29 +59,67 @@ int main()
     // Input
     TFile* TAO_Input = TFile::Open("/junofs/users/yinqixiang/work/FineStructure/EnergyResolution/TAOInputs2022_01_06.root");
     TGraph* Energy_Resolution_Graph = (TGraph*)TAO_Input -> Get("TAOEnergyResolutionNoNeutronRecoil;1");
-    
-    TH1F* h_Gaussian_Dis = new TH1F("h_Gaussian_Dis", "", 10e2, 0, 10);
-    h_Gaussian_Dis -> GetXaxis() -> SetTitle("E_rec[MeV]");
 
-    for (int i = 1; i <= 10e2; i++)
+    TFile* Neu_Spec_Vis_Input = TFile::Open("/junofs/users/yinqixiang/work/FineStructure/EnergyResolution/Program/Depo_to_Vis/build/NeuSpec_E_vis.root");
+    TH1F* Neu_Spec_Vis_Graph = (TH1F*)Neu_Spec_Vis_Input -> Get("h_NeuSpec_E_vis;1");
+    
+    double nBin = Neu_Spec_Vis_Graph -> GetNbinsX();        //可见能谱bin数
+    double Start = Neu_Spec_Vis_Graph -> GetBinLowEdge(1);  //可见能谱起始能量
+    double Energy_Bin = 1e-2;                               //可见能谱bin的宽度
+
+    // Gaussian分布
+    std::vector<double> E_vis; //Gaussian分布能量中心值
+    std::vector<double> Sigma_FWHM; //Gaussian分布标准差
+
+    for (int i = 1; i <= nBin; i++)
     {
-        h_Gaussian_Dis-> SetBinContent(i,0);
+        double Bin_Center = Neu_Spec_Vis_Graph -> GetBinLowEdge(i) + 0.5 * Energy_Bin;
+
+        double Energy_Resolution_x, Energy_Resolution_y;
+        Energy_Resolution_Graph -> GetPoint(0, Energy_Resolution_x, Energy_Resolution_y);
+        
+        if (Bin_Center > Energy_Resolution_x) //如果Bin_Center大于Energy_Resolution_Graph的第一个点的横坐标
+        {
+            E_vis.push_back(Bin_Center);
+        }
+    }
+
+    for (int i = 1; i <= E_vis.size(); i++)
+    {
+        Sigma_FWHM.push_back(GetEnergyResolution(Energy_Resolution_Graph, E_vis[i-1]) * E_vis[i-1]);
+    }
+
+    //Gaussian分布直方图
+    TH1F* h_Gaussian_Dis[E_vis.size()];
+
+    for (int i = 0; i < E_vis.size(); i++)
+    {
+        std::string Gaussian_Graph_Name = "h_Gaussian_Dis_" + std::to_string(E_vis[i]);
+
+        h_Gaussian_Dis[i] = new TH1F(Gaussian_Graph_Name.c_str(), "", int(nBin), Start, Start + nBin * Energy_Bin); //Gaussian分布范围与可见能谱保持一致
+        h_Gaussian_Dis[i] -> GetXaxis() -> SetTitle("E_rec[MeV]");
+        h_Gaussian_Dis[i]-> SetBinContent(i,0);
     }
     
     // Gaussian(E_rec, E_vis, Sigma_FWHM)
-    double E_vis = 5.0;
-    double Sigma_FWHM = GetEnergyResolution(Energy_Resolution_Graph, E_vis) * E_vis;
-
-    for (int i = 1; i <= 10e2; i++)
+    for (int i = 0; i < E_vis.size(); i++)
     {
-        double E_rec = 0.5 * Energy_Bin + (i-1) * Energy_Bin;
-        h_Gaussian_Dis -> SetBinContent(i, h_Gaussian_Dis -> GetBinContent(i) + GaussianFunc(E_rec, E_vis, Sigma_FWHM));
+        for (int j = 0; j < int(nBin); j++)
+        {
+            //以可见能谱每个bin的中心能量作为Gaussian分布的重建能量E_rec
+            double E_rec = Start + 0.5 * Energy_Bin + j * Energy_Bin;
+            
+            h_Gaussian_Dis[i] -> SetBinContent(j+1, h_Gaussian_Dis[i] -> GetBinContent(j+1) + GaussianFunc(E_rec, E_vis[i], Sigma_FWHM[i]));
+        }
     }
 
     TFile* outfile = new TFile("./Gaussian_Dis.root", "RECREATE");
     outfile -> cd();
 
-    h_Gaussian_Dis -> Write();
+    for (int i = 0; i < E_vis.size(); i++)
+    {
+        h_Gaussian_Dis[i] -> Write();
+    }
 
     outfile -> Close();
 
