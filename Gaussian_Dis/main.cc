@@ -1,5 +1,6 @@
 // Author: Qixiang Yin (yinqx@ihep.ac.cn)
 // Purpose: Gamma(Reconstruct Energy, Visible Energy, FWHM)
+// 计算能量分辨率高斯分布矩阵
 
 #include <iostream>
 #include <string>
@@ -63,8 +64,7 @@ int main()
     TFile* Neu_Spec_Vis_Input = TFile::Open("/junofs/users/yinqixiang/work/FineStructure/EnergyResolution/Program/Depo_to_Vis/build/NeuSpec_E_vis.root");
     TH1F* Neu_Spec_Vis_Graph = (TH1F*)Neu_Spec_Vis_Input -> Get("h_NeuSpec_E_vis;1");
     
-    double nBin = Neu_Spec_Vis_Graph -> GetNbinsX();        //可见能谱bin数
-    double Start = Neu_Spec_Vis_Graph -> GetBinLowEdge(1);  //可见能谱起始能量
+    double nBin = Neu_Spec_Vis_Graph -> GetNbinsX();        //可见能谱bin的数目
     double Energy_Bin = 1e-2;                               //可见能谱bin的宽度
 
     // Gaussian分布
@@ -92,11 +92,14 @@ int main()
     //Gaussian分布直方图
     TH1F* h_Gaussian_Dis[E_vis.size()];
 
+    double nBin_Gaussian = E_vis.size();          //高斯分布bin的数目
+    double Start = E_vis[0] - 0.5 * Energy_Bin;   //高斯分布的起始能量
+
     for (int i = 0; i < E_vis.size(); i++)
     {
         std::string Gaussian_Graph_Name = "h_Gaussian_Dis_" + std::to_string(E_vis[i]);
 
-        h_Gaussian_Dis[i] = new TH1F(Gaussian_Graph_Name.c_str(), "", int(nBin), Start, Start + nBin * Energy_Bin); //Gaussian分布范围与可见能谱保持一致
+        h_Gaussian_Dis[i] = new TH1F(Gaussian_Graph_Name.c_str(), "", nBin_Gaussian, Start, Start + nBin * Energy_Bin);
         h_Gaussian_Dis[i] -> GetXaxis() -> SetTitle("E_rec[MeV]");
         h_Gaussian_Dis[i]-> SetBinContent(i,0);
     }
@@ -104,7 +107,7 @@ int main()
     // Gaussian(E_rec, E_vis, Sigma_FWHM)
     for (int i = 0; i < E_vis.size(); i++)
     {
-        for (int j = 0; j < int(nBin); j++)
+        for (int j = 0; j < int(nBin_Gaussian); j++)
         {
             //以可见能谱每个bin的中心能量作为Gaussian分布的重建能量E_rec
             double E_rec = Start + 0.5 * Energy_Bin + j * Energy_Bin;
