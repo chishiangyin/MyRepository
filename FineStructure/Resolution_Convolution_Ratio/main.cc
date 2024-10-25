@@ -16,7 +16,7 @@ int main()
     double Start = Convolution_Spec -> GetBinLowEdge(1);
     double EnergyBin = 0.01;
 
-    TH1F* Ratio_Spec = new TH1F("Ratio_in_Convolution_Spec", "", Bin_Number; Start; Start + double(Bin_Number) * EnergyBin);
+    TH1F* Ratio_Spec = new TH1F("Ratio_in_Convolution_Spec", "", Bin_Number, Start, Start + double(Bin_Number) * EnergyBin);
     Ratio_Spec -> GetXaxis() -> SetTitle("E[MeV]");
 
     for(int i = 1; i <= Bin_Number; i++)
