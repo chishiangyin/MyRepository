@@ -29,7 +29,7 @@ int main()
         if(Convolution_Spec->GetBinContent(i) != 0)
         {
             double Ratio = Convolution_Spec->GetBinContent(i+1) / Convolution_Spec->GetBinContent(i);
-            Convolution_Spec -> SetBinContent(i,Ratio);
+            Ratio_Spec -> SetBinContent(i,Ratio);
         }
     }
 
