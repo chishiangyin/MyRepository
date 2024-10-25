@@ -29,6 +29,11 @@ int main()
         double Ratio = Convolution_Spec->GetBinContent(i+1) / Convolution_Spec->GetBinContent(i);
         Convolution_Spec -> SetBinContent(i,Ratio);
     }
-    
+
+    TFile* outfile = new TFile("./Ratio_Convolution_Spec.root", "RECREATE");
+    outfile -> cd();
+    Ratio_Spec -> Write();
+    outfile -> Close();
+   
     return 0;
 }
