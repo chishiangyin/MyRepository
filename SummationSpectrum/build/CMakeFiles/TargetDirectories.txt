@@ -1,4 +1,0 @@
-/junofs/users/yinqixiang/package/SummationSpectrum/build/CMakeFiles/mylib.dir
-/junofs/users/yinqixiang/package/SummationSpectrum/build/CMakeFiles/main.dir
-/junofs/users/yinqixiang/package/SummationSpectrum/build/CMakeFiles/edit_cache.dir
-/junofs/users/yinqixiang/package/SummationSpectrum/build/CMakeFiles/rebuild_cache.dir
